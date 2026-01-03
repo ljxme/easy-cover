@@ -1,89 +1,104 @@
 # Easy Cover
 
-简单、优雅的封面图生成工具。纯客户端运行，保护您的隐私。
+A simple and elegant cover image generation tool.Runs entirely on the client side, protecting your privacy.
 
-Fork from [AcoFork](https://github.com/afoim/easy_cover)
+Forked from [AcoFork](https://github.com/afoim/easy_cover)
 
-## ✨ 特性
+## Features
 
-*   **纯客户端生成**：所有图片处理均在浏览器完成，无需上传服务器。
-*   **多比例支持**：支持 1:1, 16:9, 21:9, 4:3, 2:1 等多种主流封面比例。
-*   **丰富的图标库**：集成 Iconify，支持搜索和使用数万个图标。
-*   **高度自定义**：
-    *   **图标**：大小、旋转、颜色、阴影、容器形状（圆/方/圆角）、毛玻璃效果（高斯模糊 + 透明度）。
-    *   **文字**：自定义内容、大小、颜色、描边。
-    *   **背景**：纯色背景、图片背景（支持缩放、旋转、平移、模糊）。
-*   **智能排版**：自动居中布局，支持“适应”和“铺满”两种图片填充模式。
-*   **纯净导出**：一键导出 PNG，自动隐藏辅助线和标尺。
+* **Pure Client-Side Generation**
+  All image processing is performed entirely in the browser. No files are uploaded to any server.
 
-## 🛠️ 技术栈
+* **Multiple Aspect Ratio Support**
+  Supports a wide range of common cover ratios, including 1:1, 16:9, 21:9, 4:3, 2:1, and more.
 
-*   [Next.js](https://nextjs.org/) - React 框架
-*   [Tailwind CSS](https://tailwindcss.com/) - 样式引擎
-*   [Shadcn/ui](https://ui.shadcn.com/) - UI 组件库
-*   [Zustand](https://github.com/pmndrs/zustand) - 状态管理
-*   [Iconify](https://iconify.design/) - 图标方案
-*   [html-to-image](https://github.com/bubkoo/html-to-image) - 图片生成
+* **Rich Icon Library**
+  Integrated with Iconify, allowing you to search and use tens of thousands of icons.
 
-## 🚀 快速开始
+* **Highly Customizable**
 
-1.  **克隆仓库**
+  * **Icons**: Adjustable size, rotation, color, shadow, container shape (circle / square / rounded), and frosted glass effects (Gaussian blur + opacity).
+  * **Text**: Custom content, font size, color, and stroke.
+  * **Background**: Solid color backgrounds or image backgrounds, with support for scaling, rotation, translation, and blur.
+
+* **Intelligent Layout**
+  Automatic center alignment with support for both “contain” and “cover” image fitting modes.
+
+* **Clean Export**
+  One-click PNG export that automatically hides guides and rulers.
+
+## Tech Stack
+
+* [Next.js](https://nextjs.org/) — React framework
+* [Tailwind CSS](https://tailwindcss.com/) — Utility-first CSS framework
+* [Shadcn/ui](https://ui.shadcn.com/) — UI component library
+* [Zustand](https://github.com/pmndrs/zustand) — State management
+* [Iconify](https://iconify.design/) — Icon solution
+* [html-to-image](https://github.com/bubkoo/html-to-image) — DOM-to-image rendering
+
+## Quick Start
+
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/afoim/easy_cover.git
-cd easy_cover
+git clone https://github.com/ljxme/easy-cover.git
+cd easy-cover
 ```
 
-2.  **安装依赖**
+### 2. Install Dependencies
 
 ```bash
 npm install
-# 或者
+# or
 yarn install
-# 或者
+# or
 pnpm install
 ```
 
-3.  **启动开发服务器**
+### 3. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-打开浏览器访问 [http://localhost:3000](http://localhost:3000) 即可使用。
+Open your browser and visit `http://localhost:3110` to start using the application.
 
-## 📖 使用指南
+## Usage Guide
 
-1.  **选择布局**：在左侧面板选择所需的图片比例（如 16:9）。
-2.  **设置内容**：输入封面标题，调整文字大小和颜色。
-3.  **添加图标**：点击图标选择器搜索并选择合适的图标，调整其样式和容器背景（支持毛玻璃效果）。
-4.  **配置背景**：选择纯色背景或上传本地图片。使用“适应”或“铺满”按钮快速调整图片布局。
-5.  **导出**：点击底部的“导出封面图”按钮保存图片。
+1. **Select Layout**
+   Choose the desired image aspect ratio (e.g., 16:9) from the left panel.
 
-## 📦 部署
+2. **Configure Content**
+   Enter the cover title and adjust the text size and color.
 
-本项目已配置为静态导出 (`output: 'export'`)，可轻松部署到任何静态托管服务。
+3. **Add Icons**
+   Use the icon picker to search and select an icon. Customize its style and container background, including frosted glass effects.
 
-### Vercel 部署
+4. **Configure Background**
+   Select a solid color background or upload a local image. Use the “Contain” or “Cover” buttons to quickly adjust image fitting.
 
-1.  Fork 本仓库。
-2.  在 Vercel 中导入项目。
-3.  Vercel 会自动识别 Next.js 项目。
-4.  **重要**：确保构建命令为 `npm run build` (默认)，输出目录默认为 `out` (Next.js 静态导出默认目录)。
-    *   注：本项目已在 `next.config.ts` 中启用了 `output: 'export'`，Vercel 会自动处理，无需额外配置。
-
-### GitHub Pages 部署
-
-1.  构建项目：
-    ```bash
-    npm run build
-    ```
-2.  将生成的 `out` 目录内容推送到 `gh-pages` 分支。
-
-## 📄 许可证
-
-本项目采用 [AGPL-3.0](LICENSE) 许可证。
+5. **Export**
+   Click the “Export Cover Image” button at the bottom to save the generated image.
 
 ---
 
-Made with ❤️ by AcoFork
+## Deployment
+
+This project is configured for static export (`output: 'export'`) and can be deployed to any static hosting service.
+
+### Deploying on Vercel
+
+1. Fork this repository.
+2. Import the project into Vercel.
+3. Vercel will automatically detect the Next.js framework.
+4. **Important**: Ensure the build command is `npm run build` (default), and the output directory is `out` (the default directory for Next.js static exports).
+
+   * Note: The project already enables `output: 'export'` in `next.config.ts`, so no additional configuration is required.
+
+## License
+
+This project is licensed under the [AGPL-3.0](LICENSE) license.
+
+---
+
+Made with ❤️ by Ljx | Inspired ✨ by [AcoFork](https://github.com/afoim)
