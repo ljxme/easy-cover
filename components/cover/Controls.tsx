@@ -135,6 +135,7 @@ export default function Controls() {
       const dataUrl = await toPng(node as HTMLElement, { 
           quality: 0.95, 
           pixelRatio: 1,
+          skipFonts: true,
           filter: (node) => {
               // Exclude elements with the class 'export-exclude'
               if (node.classList && node.classList.contains('export-exclude')) {
@@ -146,7 +147,9 @@ export default function Controls() {
       const link = document.createElement('a');
       link.download = 'easy-cover.png';
       link.href = dataUrl;
+      document.body.appendChild(link);
       link.click();
+      link.remove();
     } catch (err) {
       console.error('Export failed', err);
     }
