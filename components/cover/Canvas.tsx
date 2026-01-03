@@ -3,7 +3,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useCoverStore, RATIOS } from '@/store/useCoverStore';
 import { Icon } from '@iconify/react';
-import { cn } from '@/lib/utils';
 
 export default function Canvas() {
   const {

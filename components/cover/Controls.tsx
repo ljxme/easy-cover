@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useCoverStore, RATIOS, AspectRatio } from '@/store/useCoverStore';
+import { useCoverStore, RATIOS } from '@/store/useCoverStore';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
@@ -17,6 +17,8 @@ import { Separator } from '@/components/ui/separator';
 import { Download, RotateCcw, Maximize, Github, ExternalLink } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
+type IconBgShape = 'none' | 'circle' | 'square' | 'rounded-square';
+
 // Helper component for Reset Button
 const ResetButton = ({ onClick, tooltip = "重置" }: { onClick: () => void, tooltip?: string }) => (
     <Button 
@@ -30,8 +32,72 @@ const ResetButton = ({ onClick, tooltip = "重置" }: { onClick: () => void, too
     </Button>
 );
 
+function clampNumber(value: number, min?: number, max?: number) {
+  if (Number.isNaN(value)) return value;
+  if (typeof min === 'number') value = Math.max(min, value);
+  if (typeof max === 'number') value = Math.min(max, value);
+  return value;
+}
+
+function NumberInput({
+  value,
+  min,
+  max,
+  step = 1,
+  onValueChange,
+  className,
+}: {
+  value: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  onValueChange: (value: number) => void;
+  className?: string;
+}) {
+  const [text, setText] = React.useState(() => String(value));
+
+  React.useEffect(() => {
+    setText(String(value));
+  }, [value]);
+
+  const commit = React.useCallback(() => {
+    if (text.trim() === '') {
+      setText(String(value));
+      return;
+    }
+
+    const next = Number(text);
+    if (!Number.isFinite(next)) {
+      setText(String(value));
+      return;
+    }
+
+    onValueChange(clampNumber(next, min, max));
+  }, [max, min, onValueChange, text, value]);
+
+  return (
+    <Input
+      type="number"
+      inputMode="decimal"
+      className={className ?? "h-7 w-24 px-2 py-1 text-xs"}
+      value={text}
+      min={min}
+      max={max}
+      step={step}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          (e.currentTarget as HTMLInputElement).blur();
+        }
+      }}
+    />
+  );
+}
+
 export default function Controls() {
   const store = useCoverStore();
+  type BackgroundUpdate = Parameters<typeof store.updateBackground>[0];
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -88,7 +154,7 @@ export default function Controls() {
 
   const handleFit = (mode: 'contain' | 'cover') => {
       // Always reset position and rotation
-      const updates: any = { positionX: 50, positionY: 50, rotation: 0 };
+      const updates: BackgroundUpdate = { positionX: 50, positionY: 50, rotation: 0 };
       
       // We will simply reset scale to 1 and let user manually adjust if they want 'contain'.
       // But for 'cover', we try to calculate a scale that fills the canvas.
@@ -206,9 +272,18 @@ export default function Controls() {
             </div>
             
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center gap-2">
                  <Label>大小 ({store.text.fontSize}px)</Label>
-                 <ResetButton onClick={() => store.updateText({ fontSize: 160 })} />
+                 <div className="flex items-center">
+                   <NumberInput
+                     value={store.text.fontSize}
+                     min={12}
+                     max={2500}
+                     step={1}
+                     onValueChange={(v) => store.updateText({ fontSize: v })}
+                   />
+                   <ResetButton onClick={() => store.updateText({ fontSize: 160 })} />
+                 </div>
               </div>
               <Slider 
                 value={[store.text.fontSize]} 
@@ -225,9 +300,18 @@ export default function Controls() {
             </div>
 
             <div className="space-y-2">
-               <div className="flex justify-between items-center">
+               <div className="flex justify-between items-center gap-2">
                    <Label>描边宽度</Label>
-                   <ResetButton onClick={() => store.updateText({ strokeWidth: 0 })} />
+                   <div className="flex items-center">
+                     <NumberInput
+                       value={store.text.strokeWidth}
+                       min={0}
+                       max={10}
+                       step={0.5}
+                       onValueChange={(v) => store.updateText({ strokeWidth: v })}
+                     />
+                     <ResetButton onClick={() => store.updateText({ strokeWidth: 0 })} />
+                   </div>
                </div>
                <Slider 
                  value={[store.text.strokeWidth]} 
@@ -293,9 +377,18 @@ export default function Controls() {
                         {store.icon.customIconUrl && (
                             <>
                                 <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex justify-between items-center gap-2">
                                         <Label className="text-xs">图片圆角 ({store.icon.customIconRadius}px)</Label>
-                                        <ResetButton onClick={() => store.updateIcon({ customIconRadius: 0 })} />
+                                        <div className="flex items-center">
+                                          <NumberInput
+                                            value={store.icon.customIconRadius}
+                                            min={0}
+                                            max={1000}
+                                            step={5}
+                                            onValueChange={(v) => store.updateIcon({ customIconRadius: v })}
+                                          />
+                                          <ResetButton onClick={() => store.updateIcon({ customIconRadius: 0 })} />
+                                        </div>
                                     </div>
                                     <Slider 
                                         value={[store.icon.customIconRadius]} 
@@ -321,9 +414,18 @@ export default function Controls() {
             </Tabs>
 
             <div className="space-y-2">
-               <div className="flex justify-between items-center">
+               <div className="flex justify-between items-center gap-2">
                    <Label>大小 ({store.icon.size}px)</Label>
-                   <ResetButton onClick={() => store.updateIcon({ size: 120 })} />
+                   <div className="flex items-center">
+                     <NumberInput
+                       value={store.icon.size}
+                       min={20}
+                       max={2500}
+                       step={5}
+                       onValueChange={(v) => store.updateIcon({ size: v })}
+                     />
+                     <ResetButton onClick={() => store.updateIcon({ size: 120 })} />
+                   </div>
                </div>
                <Slider 
                  value={[store.icon.size]} 
@@ -335,9 +437,18 @@ export default function Controls() {
             </div>
 
             <div className="space-y-2">
-               <div className="flex justify-between items-center">
+               <div className="flex justify-between items-center gap-2">
                    <Label>旋转 ({store.icon.rotation}°)</Label>
-                   <ResetButton onClick={() => store.updateIcon({ rotation: 0 })} />
+                   <div className="flex items-center">
+                     <NumberInput
+                       value={store.icon.rotation}
+                       min={0}
+                       max={360}
+                       step={1}
+                       onValueChange={(v) => store.updateIcon({ rotation: v })}
+                     />
+                     <ResetButton onClick={() => store.updateIcon({ rotation: 0 })} />
+                   </div>
                </div>
                <Slider 
                  value={[store.icon.rotation]} 
@@ -370,9 +481,18 @@ export default function Controls() {
                     </div>
                     
                     <div className="space-y-1">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                             <Label className="text-xs">模糊 ({store.icon.shadowBlur}px)</Label>
-                            <ResetButton onClick={() => store.updateIcon({ shadowBlur: 6 })} />
+                            <div className="flex items-center">
+                              <NumberInput
+                                value={store.icon.shadowBlur}
+                                min={0}
+                                max={100}
+                                step={1}
+                                onValueChange={(v) => store.updateIcon({ shadowBlur: v })}
+                              />
+                              <ResetButton onClick={() => store.updateIcon({ shadowBlur: 6 })} />
+                            </div>
                         </div>
                         <Slider 
                             value={[store.icon.shadowBlur]} 
@@ -384,9 +504,18 @@ export default function Controls() {
                     </div>
 
                     <div className="space-y-1">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                             <Label className="text-xs">垂直偏移 ({store.icon.shadowOffsetY}px)</Label>
-                            <ResetButton onClick={() => store.updateIcon({ shadowOffsetY: 4 })} />
+                            <div className="flex items-center">
+                              <NumberInput
+                                value={store.icon.shadowOffsetY}
+                                min={-50}
+                                max={50}
+                                step={1}
+                                onValueChange={(v) => store.updateIcon({ shadowOffsetY: v })}
+                              />
+                              <ResetButton onClick={() => store.updateIcon({ shadowOffsetY: 4 })} />
+                            </div>
                         </div>
                         <Slider 
                             value={[store.icon.shadowOffsetY]} 
@@ -403,7 +532,20 @@ export default function Controls() {
             
             <div className="space-y-2">
                 <Label>图标容器形状</Label>
-                <Select value={store.icon.bgShape} onValueChange={(v) => store.updateIcon({ bgShape: v as any })}>
+                <Select
+                  value={store.icon.bgShape}
+                  onValueChange={(v) => {
+                    const next = v as IconBgShape;
+                    if (
+                      next === 'none' ||
+                      next === 'circle' ||
+                      next === 'square' ||
+                      next === 'rounded-square'
+                    ) {
+                      store.updateIcon({ bgShape: next });
+                    }
+                  }}
+                >
                     <SelectTrigger>
                         <SelectValue placeholder="容器形状" />
                     </SelectTrigger>
@@ -423,9 +565,18 @@ export default function Controls() {
                         <ColorPicker color={store.icon.bgColor} onChange={(c) => store.updateIcon({ bgColor: c })} />
                     </div>
                     <div className="space-y-2">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                             <Label>内边距 ({store.icon.padding}px)</Label>
-                            <ResetButton onClick={() => store.updateIcon({ padding: 40 })} />
+                            <div className="flex items-center">
+                              <NumberInput
+                                value={store.icon.padding}
+                                min={0}
+                                max={100}
+                                step={5}
+                                onValueChange={(v) => store.updateIcon({ padding: v })}
+                              />
+                              <ResetButton onClick={() => store.updateIcon({ padding: 40 })} />
+                            </div>
                         </div>
                         <Slider 
                             value={[store.icon.padding]} 
@@ -437,9 +588,18 @@ export default function Controls() {
                     </div>
                     {store.icon.bgShape === 'rounded-square' && (
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2">
                                 <Label>容器圆角 ({store.icon.radius}px)</Label>
-                                <ResetButton onClick={() => store.updateIcon({ radius: 40 })} />
+                                <div className="flex items-center">
+                                  <NumberInput
+                                    value={store.icon.radius}
+                                    min={0}
+                                    max={200}
+                                    step={5}
+                                    onValueChange={(v) => store.updateIcon({ radius: v })}
+                                  />
+                                  <ResetButton onClick={() => store.updateIcon({ radius: 40 })} />
+                                </div>
                             </div>
                             <Slider 
                                 value={[store.icon.radius]} 
@@ -452,9 +612,18 @@ export default function Controls() {
                     )}
                     
                     <div className="space-y-2">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                             <Label>容器透明度 ({(store.icon.bgOpacity * 100).toFixed(0)}%)</Label>
-                            <ResetButton onClick={() => store.updateIcon({ bgOpacity: 1 })} />
+                            <div className="flex items-center">
+                              <NumberInput
+                                value={Number((store.icon.bgOpacity * 100).toFixed(0))}
+                                min={0}
+                                max={100}
+                                step={1}
+                                onValueChange={(v) => store.updateIcon({ bgOpacity: v / 100 })}
+                              />
+                              <ResetButton onClick={() => store.updateIcon({ bgOpacity: 1 })} />
+                            </div>
                         </div>
                         <Slider 
                             value={[store.icon.bgOpacity]} 
@@ -466,9 +635,18 @@ export default function Controls() {
                     </div>
 
                     <div className="space-y-2">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                             <Label>容器模糊 ({(store.icon.bgBlur)}px)</Label>
-                            <ResetButton onClick={() => store.updateIcon({ bgBlur: 0 })} />
+                            <div className="flex items-center">
+                              <NumberInput
+                                value={store.icon.bgBlur}
+                                min={0}
+                                max={50}
+                                step={1}
+                                onValueChange={(v) => store.updateIcon({ bgBlur: v })}
+                              />
+                              <ResetButton onClick={() => store.updateIcon({ bgBlur: 0 })} />
+                            </div>
                         </div>
                         <Slider 
                             value={[store.icon.bgBlur]} 
@@ -505,9 +683,18 @@ export default function Controls() {
                      <Input type="file" accept="image/*" onChange={handleImageUpload} />
                      
                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                             <Label>高斯模糊 ({store.background.blur}px)</Label>
-                            <ResetButton onClick={() => store.updateBackground({ blur: 0 })} />
+                            <div className="flex items-center">
+                              <NumberInput
+                                value={store.background.blur}
+                                min={0}
+                                max={50}
+                                step={1}
+                                onValueChange={(v) => store.updateBackground({ blur: v })}
+                              />
+                              <ResetButton onClick={() => store.updateBackground({ blur: 0 })} />
+                            </div>
                         </div>
                         <Slider 
                             value={[store.background.blur]} 
@@ -542,9 +729,18 @@ export default function Controls() {
                         </div>
                         
                         <div className="space-y-1">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2">
                                 <Label className="text-xs">缩放 ({store.background.scale.toFixed(1)}x)</Label>
-                                <ResetButton onClick={() => store.updateBackground({ scale: 1 })} />
+                                <div className="flex items-center">
+                                  <NumberInput
+                                    value={Number(store.background.scale.toFixed(2))}
+                                    min={0.1}
+                                    max={10}
+                                    step={0.1}
+                                    onValueChange={(v) => store.updateBackground({ scale: v })}
+                                  />
+                                  <ResetButton onClick={() => store.updateBackground({ scale: 1 })} />
+                                </div>
                             </div>
                             <Slider 
                                 value={[store.background.scale]} 
@@ -556,9 +752,18 @@ export default function Controls() {
                         </div>
 
                         <div className="space-y-1">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2">
                                 <Label className="text-xs">水平位置 ({store.background.positionX}%)</Label>
-                                <ResetButton onClick={() => store.updateBackground({ positionX: 50 })} />
+                                <div className="flex items-center">
+                                  <NumberInput
+                                    value={store.background.positionX}
+                                    min={-500}
+                                    max={500}
+                                    step={1}
+                                    onValueChange={(v) => store.updateBackground({ positionX: v })}
+                                  />
+                                  <ResetButton onClick={() => store.updateBackground({ positionX: 50 })} />
+                                </div>
                             </div>
                             <Slider 
                                 value={[store.background.positionX]} 
@@ -570,9 +775,18 @@ export default function Controls() {
                         </div>
 
                         <div className="space-y-1">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2">
                                 <Label className="text-xs">垂直位置 ({store.background.positionY}%)</Label>
-                                <ResetButton onClick={() => store.updateBackground({ positionY: 50 })} />
+                                <div className="flex items-center">
+                                  <NumberInput
+                                    value={store.background.positionY}
+                                    min={-500}
+                                    max={500}
+                                    step={1}
+                                    onValueChange={(v) => store.updateBackground({ positionY: v })}
+                                  />
+                                  <ResetButton onClick={() => store.updateBackground({ positionY: 50 })} />
+                                </div>
                             </div>
                             <Slider 
                                 value={[store.background.positionY]} 
@@ -584,9 +798,18 @@ export default function Controls() {
                         </div>
 
                         <div className="space-y-1">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2">
                                 <Label className="text-xs">旋转 ({store.background.rotation}°)</Label>
-                                <ResetButton onClick={() => store.updateBackground({ rotation: 0 })} />
+                                <div className="flex items-center">
+                                  <NumberInput
+                                    value={store.background.rotation}
+                                    min={0}
+                                    max={360}
+                                    step={1}
+                                    onValueChange={(v) => store.updateBackground({ rotation: v })}
+                                  />
+                                  <ResetButton onClick={() => store.updateBackground({ rotation: 0 })} />
+                                </div>
                             </div>
                             <Slider 
                                 value={[store.background.rotation]} 
@@ -617,9 +840,18 @@ export default function Controls() {
                     </div>
                     
                     <div className="space-y-1">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                             <Label className="text-xs">模糊 ({store.background.shadowBlur}px)</Label>
-                            <ResetButton onClick={() => store.updateBackground({ shadowBlur: 30 })} />
+                            <div className="flex items-center">
+                              <NumberInput
+                                value={store.background.shadowBlur}
+                                min={0}
+                                max={200}
+                                step={1}
+                                onValueChange={(v) => store.updateBackground({ shadowBlur: v })}
+                              />
+                              <ResetButton onClick={() => store.updateBackground({ shadowBlur: 30 })} />
+                            </div>
                         </div>
                         <Slider 
                             value={[store.background.shadowBlur]} 
@@ -631,9 +863,18 @@ export default function Controls() {
                     </div>
 
                     <div className="space-y-1">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center gap-2">
                             <Label className="text-xs">垂直偏移 ({store.background.shadowOffsetY}px)</Label>
-                            <ResetButton onClick={() => store.updateBackground({ shadowOffsetY: 10 })} />
+                            <div className="flex items-center">
+                              <NumberInput
+                                value={store.background.shadowOffsetY}
+                                min={-100}
+                                max={100}
+                                step={1}
+                                onValueChange={(v) => store.updateBackground({ shadowOffsetY: v })}
+                              />
+                              <ResetButton onClick={() => store.updateBackground({ shadowOffsetY: 10 })} />
+                            </div>
                         </div>
                         <Slider 
                             value={[store.background.shadowOffsetY]} 

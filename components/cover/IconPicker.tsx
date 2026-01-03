@@ -37,14 +37,31 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
   const [loading, setLoading] = useState(false);
   
   // Default featured icons if query is empty
-  const featuredIcons = [
-    'logos:react', 'logos:nextjs-icon', 'logos:typescript-icon', 'logos:tailwindcss-icon',
-    'logos:github-icon', 'logos:twitter', 'logos:google-icon', 'logos:apple',
-    'ph:star-fill', 'ph:heart-fill', 'ph:check-circle-fill', 'ph:warning-fill',
-    'mdi:home', 'mdi:account', 'mdi:cog', 'mdi:bell',
-    'fluent:emoji-smile-slight-24-filled', 'fluent:weather-sunny-24-filled',
-    'simple-icons:shadcnui', 'simple-icons:vercel'
-  ];
+  const featuredIcons = React.useMemo(
+    () => [
+      'logos:react',
+      'logos:nextjs-icon',
+      'logos:typescript-icon',
+      'logos:tailwindcss-icon',
+      'logos:github-icon',
+      'logos:twitter',
+      'logos:google-icon',
+      'logos:apple',
+      'ph:star-fill',
+      'ph:heart-fill',
+      'ph:check-circle-fill',
+      'ph:warning-fill',
+      'mdi:home',
+      'mdi:account',
+      'mdi:cog',
+      'mdi:bell',
+      'fluent:emoji-smile-slight-24-filled',
+      'fluent:weather-sunny-24-filled',
+      'simple-icons:shadcnui',
+      'simple-icons:vercel',
+    ],
+    []
+  );
 
   const debouncedQuery = useDebounceValue(query, 500);
 
@@ -70,12 +87,12 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
     };
 
     searchIcons();
-  }, [debouncedQuery]);
+  }, [debouncedQuery, featuredIcons]);
 
   // Initial load
   useEffect(() => {
       if(!query) setIcons(featuredIcons);
-  }, []);
+  }, [featuredIcons, query]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
