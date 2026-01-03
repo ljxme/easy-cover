@@ -215,10 +215,10 @@ export default function Controls() {
     <div className="w-full md:w-80 h-1/2 md:h-full border-t md:border-t-0 md:border-r bg-background flex flex-col shadow-lg z-10">
       <div className="p-4 border-b">
         <h1 className="text-xl font-bold flex items-center gap-2">
-           EasyCover - AcoFork
+           Easy Cover
         </h1>
         <p className="text-xs text-muted-foreground mt-1">
-            简单、优雅的纯客户端封面图生成器。无需上传，保护隐私。
+            A simple and elegant cover image generation tool.
         </p>
       </div>
       

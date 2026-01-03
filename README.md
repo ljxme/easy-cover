@@ -1,6 +1,8 @@
-# EasyCover - AcoFork
+# Easy Cover
 
 简单、优雅的封面图生成工具。纯客户端运行，保护您的隐私。
+
+Fork from [AcoFork](https://github.com/afoim/easy_cover)
 
 ## ✨ 特性
 
