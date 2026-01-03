@@ -1,8 +1,12 @@
-'use client';
+"use client";
 
-import { HexColorPicker } from 'react-colorful';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import { HexColorPicker } from "react-colorful";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 interface ColorPickerProps {
   color: string;
@@ -19,7 +23,7 @@ export function ColorPicker({ color, onChange, label }: ColorPickerProps) {
           <Button
             variant="outline"
             className="w-8 h-8 rounded-full p-0 border-2"
-            style={{ backgroundColor: color, borderColor: '#e5e7eb' }}
+            style={{ backgroundColor: color, borderColor: "#e5e7eb" }}
           />
         </PopoverTrigger>
         <PopoverContent className="w-auto p-3">
