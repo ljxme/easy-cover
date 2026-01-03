@@ -93,7 +93,6 @@ export default function Canvas() {
                 style={{
                   borderRadius: `${icon.customIconRadius}px`,
                 }}
-                unoptimized
               />
           ) : (
               <Icon icon={icon.name} width={icon.size} height={icon.size} color={icon.color} />
@@ -172,7 +171,6 @@ export default function Canvas() {
                         transform: `scale(${background.scale}) translate(${background.positionX - 50}%, ${background.positionY - 50}%) rotate(${background.rotation}deg)`,
                         transformOrigin: 'center',
                       }}
-                      unoptimized
                     />
                 )}
             </div>
