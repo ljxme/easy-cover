@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useCoverStore, RATIOS } from '@/store/useCoverStore';
 import { Icon } from '@iconify/react';
 
@@ -83,15 +84,16 @@ export default function Canvas() {
           }}
       >
           {icon.customIconUrl ? (
-              <img 
-                  src={icon.customIconUrl} 
-                  alt="Custom Icon" 
-                  className="w-full h-full object-contain"
-                  style={{
-                      width: `${icon.size}px`,
-                      height: `${icon.size}px`,
-                      borderRadius: `${icon.customIconRadius}px`,
-                  }}
+              <Image
+                src={icon.customIconUrl}
+                alt="Custom Icon"
+                width={icon.size}
+                height={icon.size}
+                className="w-full h-full object-contain"
+                style={{
+                  borderRadius: `${icon.customIconRadius}px`,
+                }}
+                unoptimized
               />
           ) : (
               <Icon icon={icon.name} width={icon.size} height={icon.size} color={icon.color} />
@@ -128,7 +130,7 @@ export default function Canvas() {
   };
 
   return (
-    <div className="flex-1 bg-gray-100 dark:bg-gray-900 overflow-hidden relative w-full h-[40vh] md:h-full min-w-0 flex-shrink-0 md:flex-shrink">
+    <div className="flex-1 bg-gray-100 dark:bg-gray-900 overflow-hidden relative w-full h-[40vh] md:h-full min-w-0 shrink-0 md:shrink">
       {/* Container for scaling */}
       <div
         ref={containerRef}
@@ -159,15 +161,18 @@ export default function Canvas() {
               }}
             >
                 {background.type === 'image' && background.imageUrl && (
-                    <img 
-                        src={background.imageUrl}
-                        alt="Background"
-                        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                        style={{
-                            filter: `blur(${background.blur}px)`,
-                            transform: `scale(${background.scale}) translate(${background.positionX - 50}%, ${background.positionY - 50}%) rotate(${background.rotation}deg)`,
-                            transformOrigin: 'center',
-                        }}
+                    <Image
+                      src={background.imageUrl}
+                      alt="Background"
+                      fill
+                      sizes="100vw"
+                      className="absolute inset-0 object-contain pointer-events-none"
+                      style={{
+                        filter: `blur(${background.blur}px)`,
+                        transform: `scale(${background.scale}) translate(${background.positionX - 50}%, ${background.positionY - 50}%) rotate(${background.rotation}deg)`,
+                        transformOrigin: 'center',
+                      }}
+                      unoptimized
                     />
                 )}
             </div>

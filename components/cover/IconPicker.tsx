@@ -99,7 +99,7 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-start text-left font-normal px-3">
           <div className="flex items-center gap-2 overflow-hidden">
-             <Icon icon={value} className="w-5 h-5 flex-shrink-0" />
+             <Icon icon={value} className="w-5 h-5 shrink-0" />
              <span className="truncate">{value || "选择图标..."}</span>
           </div>
         </Button>
