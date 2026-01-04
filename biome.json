@@ -10,7 +10,8 @@
     "linter": null
   },
   "files": {
-    "ignoreUnknown": true
+    "ignoreUnknown": true,
+    "includes": ["**/*.{js,ts,jsx,tsx}"]
   },
   "formatter": {
     "enabled": true,

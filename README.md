@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/License-AGPL--3.0-black.svg?style=flat-square)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.1-black?style=flat-square)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-black?style=flat-square)](https://www.typescriptlang.org/)
+[![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat-square&logo=biome)](https://biomejs.dev)
 
 A simple and elegant cover image generation tool.Runs entirely on the client side, protecting your privacy.
 
