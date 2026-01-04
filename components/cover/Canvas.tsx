@@ -1,18 +1,12 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useRef, useState, useEffect, useMemo } from 'react';
-import { useCoverStore, RATIOS } from '@/store/useCoverStore';
-import { Icon } from '@iconify/react';
+import { Icon } from "@iconify/react";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { RATIOS, useCoverStore } from "@/store/useCoverStore";
 
 export default function Canvas() {
-  const {
-    selectedRatios,
-    showRuler,
-    text,
-    icon,
-    background,
-  } = useCoverStore();
+  const { selectedRatios, showRuler, text, icon, background } = useCoverStore();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -41,17 +35,19 @@ export default function Canvas() {
 
       const scaleX = availableWidth / dimensions.width;
       const scaleY = availableHeight / dimensions.height;
-      setScale(Math.min(scaleX, scaleY) * 0.9); 
+      setScale(Math.min(scaleX, scaleY) * 0.9);
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [dimensions]);
 
   // Helper to convert hex to rgba
   const hexToRgba = (hex: string, alpha: number) => {
-    let r = 0, g = 0, b = 0;
+    let r = 0,
+      g = 0,
+      b = 0;
     if (hex.length === 4) {
       r = parseInt(hex[1] + hex[1], 16);
       g = parseInt(hex[2] + hex[2], 16);
@@ -66,66 +62,85 @@ export default function Canvas() {
 
   // Helper to render the Icon with its container settings
   const renderIcon = () => {
-      const bgColor = icon.bgShape !== 'none' 
+    const bgColor =
+      icon.bgShape !== "none"
         ? hexToRgba(icon.bgColor, icon.bgOpacity)
-        : 'transparent';
-      
-      return (
+        : "transparent";
+
+    return (
       <div
-          className="flex items-center justify-center"
-          style={{
-              transform: `rotate(${icon.rotation}deg)`,
-              filter: icon.shadow ? `drop-shadow(0 ${icon.shadowOffsetY}px ${icon.shadowBlur}px ${icon.shadowColor})` : 'none',
-              backgroundColor: bgColor,
-              backdropFilter: icon.bgBlur > 0 ? `blur(${icon.bgBlur}px)` : 'none',
-              WebkitBackdropFilter: icon.bgBlur > 0 ? `blur(${icon.bgBlur}px)` : 'none',
-              padding: icon.bgShape !== 'none' ? `${icon.padding}px` : 0,
-              borderRadius: icon.bgShape === 'circle' ? '50%' : icon.bgShape === 'rounded-square' ? `${icon.radius}px` : icon.bgShape === 'square' ? '0' : '0',
-          }}
+        className="flex items-center justify-center"
+        style={{
+          transform: `rotate(${icon.rotation}deg)`,
+          filter: icon.shadow
+            ? `drop-shadow(0 ${icon.shadowOffsetY}px ${icon.shadowBlur}px ${icon.shadowColor})`
+            : "none",
+          backgroundColor: bgColor,
+          backdropFilter: icon.bgBlur > 0 ? `blur(${icon.bgBlur}px)` : "none",
+          WebkitBackdropFilter:
+            icon.bgBlur > 0 ? `blur(${icon.bgBlur}px)` : "none",
+          padding: icon.bgShape !== "none" ? `${icon.padding}px` : 0,
+          borderRadius:
+            icon.bgShape === "circle"
+              ? "50%"
+              : icon.bgShape === "rounded-square"
+                ? `${icon.radius}px`
+                : icon.bgShape === "square"
+                  ? "0"
+                  : "0",
+        }}
       >
-          {icon.customIconUrl ? (
-              <Image
-                src={icon.customIconUrl}
-                alt="Custom Icon"
-                width={icon.size}
-                height={icon.size}
-                className="w-full h-full object-contain"
-                style={{
-                  borderRadius: `${icon.customIconRadius}px`,
-                }}
-              />
-          ) : (
-              <Icon icon={icon.name} width={icon.size} height={icon.size} color={icon.color} />
-          )}
+        {icon.customIconUrl ? (
+          <Image
+            src={icon.customIconUrl}
+            alt="Custom Icon"
+            width={icon.size}
+            height={icon.size}
+            className="w-full h-full object-contain"
+            style={{
+              borderRadius: `${icon.customIconRadius}px`,
+            }}
+          />
+        ) : (
+          <Icon
+            icon={icon.name}
+            width={icon.size}
+            height={icon.size}
+            color={icon.color}
+          />
+        )}
       </div>
-      );
+    );
   };
 
   // Helper to render Text
   const renderText = (content: string) => (
-      <div
-          className="whitespace-pre text-center leading-tight"
-          style={{
-              transform: `rotate(${text.rotation}deg)`,
-              fontSize: `${text.fontSize}px`,
-              color: text.color,
-              fontWeight: text.fontWeight,
-              WebkitTextStroke: text.strokeWidth > 0 ? `${text.strokeWidth}px ${text.strokeColor}` : undefined,
-          }}
-      >
-          {content}
-      </div>
+    <div
+      className="whitespace-pre text-center leading-tight"
+      style={{
+        transform: `rotate(${text.rotation}deg)`,
+        fontSize: `${text.fontSize}px`,
+        color: text.color,
+        fontWeight: text.fontWeight,
+        WebkitTextStroke:
+          text.strokeWidth > 0
+            ? `${text.strokeWidth}px ${text.strokeColor}`
+            : undefined,
+      }}
+    >
+      {content}
+    </div>
   );
 
   // Determine Layout Content
   const renderContent = () => {
-      // Default to Overlay Layout
-      return (
-          <div className="grid place-items-center relative">
-              <div className="z-10">{renderText(text.content)}</div>
-              <div className="z-20 absolute">{renderIcon()}</div>
-          </div>
-      );
+    // Default to Overlay Layout
+    return (
+      <div className="grid place-items-center relative">
+        <div className="z-10">{renderText(text.content)}</div>
+        <div className="z-20 absolute">{renderIcon()}</div>
+      </div>
+    );
   };
 
   return (
@@ -136,85 +151,90 @@ export default function Canvas() {
         style={{
           width: dimensions.width,
           height: dimensions.height,
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
+          position: "absolute",
+          left: "50%",
+          top: "50%",
           transform: `translate(-50%, -50%) scale(${scale})`,
-          transformOrigin: 'center',
+          transformOrigin: "center",
         }}
         className="transition-all duration-300"
       >
-        <div 
-            id="canvas-export-target" 
-            className="w-full h-full relative overflow-hidden flex flex-col items-center justify-center"
-            style={{
-                boxShadow: background.shadow ? `0 ${background.shadowOffsetY}px ${background.shadowBlur}px ${background.shadowColor}` : 'none',
-            }}
+        <div
+          id="canvas-export-target"
+          className="w-full h-full relative overflow-hidden flex flex-col items-center justify-center"
+          style={{
+            boxShadow: background.shadow
+              ? `0 ${background.shadowOffsetY}px ${background.shadowBlur}px ${background.shadowColor}`
+              : "none",
+          }}
         >
-            {/* Background Layer */}
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundColor: background.type === 'solid' ? background.color : '#ffffff',
-                borderRadius: `${background.radius}px`,
-              }}
-            >
-                {background.type === 'image' && background.imageUrl && (
-                    <Image
-                      src={background.imageUrl}
-                      alt="Background"
-                      fill
-                      sizes="100vw"
-                      className="absolute inset-0 object-contain pointer-events-none"
-                      style={{
-                        filter: `blur(${background.blur}px)`,
-                        transform: `scale(${background.scale}) translate(${background.positionX - 50}%, ${background.positionY - 50}%) rotate(${background.rotation}deg)`,
-                        transformOrigin: 'center',
-                      }}
-                    />
-                )}
-            </div>
-
-            {/* Content Layer */}
-            <div className="z-10 pointer-events-none">
-                 {renderContent()}
-            </div>
-
-            {/* Overlays / Guides Layer */}
-            {selectedRatios.map((ratioLabel) => {
-                const ratio = RATIOS.find((r) => r.label === ratioLabel);
-                if (!ratio) return null;
-                
-                // Calculate position to center it
-                const left = (dimensions.width - ratio.width) / 2;
-                const top = (dimensions.height - ratio.height) / 2;
-
-                return (
-                    <div
-                        key={ratioLabel}
-                        className="absolute border-2 border-dashed border-blue-500/50 pointer-events-none flex items-start justify-start export-exclude"
-                        style={{
-                            width: ratio.width,
-                            height: ratio.height,
-                            left: left,
-                            top: top,
-                            zIndex: 50
-                        }}
-                    >
-                        <span className="bg-blue-500 text-white text-xs px-1 opacity-70">{ratioLabel}</span>
-                    </div>
-                );
-            })}
-
-            {/* Ruler Overlay */}
-            {showRuler && (
-                <div className="absolute inset-0 pointer-events-none opacity-30 z-40 export-exclude" 
-                    style={{ 
-                        backgroundImage: 'linear-gradient(90deg, #000 1px, transparent 1px), linear-gradient(0deg, #000 1px, transparent 1px)',
-                        backgroundSize: '100px 100px'
-                    }}
-                />
+          {/* Background Layer */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundColor:
+                background.type === "solid" ? background.color : "#ffffff",
+              borderRadius: `${background.radius}px`,
+            }}
+          >
+            {background.type === "image" && background.imageUrl && (
+              <Image
+                src={background.imageUrl}
+                alt="Background"
+                fill
+                sizes="100vw"
+                className="absolute inset-0 object-contain pointer-events-none"
+                style={{
+                  filter: `blur(${background.blur}px)`,
+                  transform: `scale(${background.scale}) translate(${background.positionX - 50}%, ${background.positionY - 50}%) rotate(${background.rotation}deg)`,
+                  transformOrigin: "center",
+                }}
+              />
             )}
+          </div>
+
+          {/* Content Layer */}
+          <div className="z-10 pointer-events-none">{renderContent()}</div>
+
+          {/* Overlays / Guides Layer */}
+          {selectedRatios.map((ratioLabel) => {
+            const ratio = RATIOS.find((r) => r.label === ratioLabel);
+            if (!ratio) return null;
+
+            // Calculate position to center it
+            const left = (dimensions.width - ratio.width) / 2;
+            const top = (dimensions.height - ratio.height) / 2;
+
+            return (
+              <div
+                key={ratioLabel}
+                className="absolute border-2 border-dashed border-blue-500/50 pointer-events-none flex items-start justify-start export-exclude"
+                style={{
+                  width: ratio.width,
+                  height: ratio.height,
+                  left: left,
+                  top: top,
+                  zIndex: 50,
+                }}
+              >
+                <span className="bg-blue-500 text-white text-xs px-1 opacity-70">
+                  {ratioLabel}
+                </span>
+              </div>
+            );
+          })}
+
+          {/* Ruler Overlay */}
+          {showRuler && (
+            <div
+              className="absolute inset-0 pointer-events-none opacity-30 z-40 export-exclude"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, #000 1px, transparent 1px), linear-gradient(0deg, #000 1px, transparent 1px)",
+                backgroundSize: "100px 100px",
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

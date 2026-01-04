@@ -135,6 +135,7 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
             <div className="grid grid-cols-5 gap-2">
               {icons.map((iconName) => (
                 <button
+                  type="button"
                   key={iconName}
                   className={`p-2 rounded-md hover:bg-accent flex items-center justify-center transition-colors aspect-square ${value === iconName ? "bg-accent ring-2 ring-primary" : ""}`}
                   onClick={() => {
