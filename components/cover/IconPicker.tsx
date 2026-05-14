@@ -11,23 +11,7 @@ import {
 	PopoverTrigger,
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-// Simple debounce implementation inside the component for simplicity if we don't want a separate file
-function useDebounceValue<T>(value: T, delay: number): T {
-	const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-	useEffect(() => {
-		const handler = setTimeout(() => {
-			setDebouncedValue(value);
-		}, delay);
-
-		return () => {
-			clearTimeout(handler);
-		};
-	}, [value, delay]);
-
-	return debouncedValue;
-}
+import { useDebounceValue } from '@/components/cover/controls-utils';
 
 interface IconPickerProps {
 	value: string;

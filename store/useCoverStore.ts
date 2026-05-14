@@ -23,65 +23,81 @@ interface TextSettings {
 }
 
 interface IconSettings {
-	name: string; // identifier for the icon
+	name: string;
 	size: number;
-	color: string; // useful if we allow tinting, even for colored icons
+	color: string;
 	shadow: boolean;
 	x: number;
 	y: number;
 	rotation: number;
-	// New settings for "Card/Box" style icon
 	bgShape: 'none' | 'circle' | 'square' | 'rounded-square';
 	bgColor: string;
 	padding: number;
-	radius: number; // For rounded-square custom radius
+	radius: number;
 	shadowColor: string;
 	shadowBlur: number;
 	shadowOffsetY: number;
-	// Transparency and Blur for container
-	bgOpacity: number; // 0-1
-	bgBlur: number; // px
-	// Custom image icon
+	bgOpacity: number;
+	bgBlur: number;
 	customIconUrl?: string;
-	customIconRadius: number; // For custom image icon radius
+	customIconRadius: number;
 }
 
 interface BackgroundSettings {
 	type: 'solid' | 'image';
 	color: string;
 	imageUrl: string;
-	blur: number; // 0-100
-	radius: number; // 0-100
+	blur: number;
+	radius: number;
 	shadow: boolean;
 	opacity: number;
 	shadowColor: string;
 	shadowBlur: number;
 	shadowOffsetY: number;
-	// Image transform settings
 	scale: number;
 	positionX: number;
 	positionY: number;
 	rotation: number;
 }
 
+interface DesignSnapshot {
+	text: TextSettings;
+	icon: IconSettings;
+	background: BackgroundSettings;
+}
+
+const MAX_HISTORY = 50;
+
+function snap(state: CoverState): DesignSnapshot {
+	return {
+		text: { ...state.text },
+		icon: { ...state.icon },
+		background: { ...state.background },
+	};
+}
+
 interface CoverState {
-	selectedRatios: AspectRatio[];
+	selectedRatio: AspectRatio;
 	showRuler: boolean;
 	text: TextSettings;
 	icon: IconSettings;
 	background: BackgroundSettings;
 
+	// History
+	history: DesignSnapshot[];
+	historyIndex: number;
+
 	// Actions
-	toggleRatio: (ratio: AspectRatio) => void;
+	setRatio: (ratio: AspectRatio) => void;
 	setShowRuler: (show: boolean) => void;
 	updateText: (settings: Partial<TextSettings>) => void;
 	updateIcon: (settings: Partial<IconSettings>) => void;
 	updateBackground: (settings: Partial<BackgroundSettings>) => void;
+	undo: () => void;
+	redo: () => void;
 }
 
-export const useCoverStore = create<CoverState>((set) => ({
-	selectedRatios: ['16:9'],
-	showRuler: true,
+const initialSnapshot: DesignSnapshot = {
 	text: {
 		content: '封面标题',
 		fontSize: 160,
@@ -101,7 +117,7 @@ export const useCoverStore = create<CoverState>((set) => ({
 		x: 0,
 		y: 0,
 		rotation: 0,
-		bgShape: 'rounded-square', // Default to a nice card look
+		bgShape: 'rounded-square',
 		bgColor: '#ffffff',
 		padding: 40,
 		radius: 40,
@@ -128,22 +144,89 @@ export const useCoverStore = create<CoverState>((set) => ({
 		positionY: 50,
 		rotation: 0,
 	},
+};
 
-	toggleRatio: (ratio) =>
+export const useCoverStore = create<CoverState>((set, get) => ({
+	selectedRatio: '16:9',
+	showRuler: true,
+	text: { ...initialSnapshot.text },
+	icon: { ...initialSnapshot.icon },
+	background: { ...initialSnapshot.background },
+
+	history: [initialSnapshot],
+	historyIndex: 0,
+
+	setRatio: (ratio) => set({ selectedRatio: ratio }),
+	setShowRuler: (show) => set({ showRuler: show }),
+
+	updateText: (settings) =>
 		set((state) => {
-			const exists = state.selectedRatios.includes(ratio);
-			if (exists && state.selectedRatios.length === 1) return state; // Prevent empty
+			const newText = { ...state.text, ...settings };
+			const snapshot = snap({ ...state, text: newText });
+			const newHistory = state.history
+				.slice(0, state.historyIndex + 1)
+				.concat(snapshot)
+				.slice(-MAX_HISTORY);
 			return {
-				selectedRatios: exists
-					? state.selectedRatios.filter((r) => r !== ratio)
-					: [...state.selectedRatios, ratio],
+				text: newText,
+				history: newHistory,
+				historyIndex: newHistory.length - 1,
 			};
 		}),
-	setShowRuler: (show) => set({ showRuler: show }),
-	updateText: (settings) =>
-		set((state) => ({ text: { ...state.text, ...settings } })),
+
 	updateIcon: (settings) =>
-		set((state) => ({ icon: { ...state.icon, ...settings } })),
+		set((state) => {
+			const newIcon = { ...state.icon, ...settings };
+			const snapshot = snap({ ...state, icon: newIcon });
+			const newHistory = state.history
+				.slice(0, state.historyIndex + 1)
+				.concat(snapshot)
+				.slice(-MAX_HISTORY);
+			return {
+				icon: newIcon,
+				history: newHistory,
+				historyIndex: newHistory.length - 1,
+			};
+		}),
+
 	updateBackground: (settings) =>
-		set((state) => ({ background: { ...state.background, ...settings } })),
+		set((state) => {
+			const newBg = { ...state.background, ...settings };
+			const snapshot = snap({ ...state, background: newBg });
+			const newHistory = state.history
+				.slice(0, state.historyIndex + 1)
+				.concat(snapshot)
+				.slice(-MAX_HISTORY);
+			return {
+				background: newBg,
+				history: newHistory,
+				historyIndex: newHistory.length - 1,
+			};
+		}),
+
+	undo: () =>
+		set((state) => {
+			if (state.historyIndex <= 0) return state;
+			const newIndex = state.historyIndex - 1;
+			const snap = state.history[newIndex];
+			return {
+				text: { ...snap.text },
+				icon: { ...snap.icon },
+				background: { ...snap.background },
+				historyIndex: newIndex,
+			};
+		}),
+
+	redo: () =>
+		set((state) => {
+			if (state.historyIndex >= state.history.length - 1) return state;
+			const newIndex = state.historyIndex + 1;
+			const snap = state.history[newIndex];
+			return {
+				text: { ...snap.text },
+				icon: { ...snap.icon },
+				background: { ...snap.background },
+				historyIndex: newIndex,
+			};
+		}),
 }));

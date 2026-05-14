@@ -1,28 +1,25 @@
 'use client';
 
-import { Icon } from '@iconify/react';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RATIOS, useCoverStore } from '@/store/useCoverStore';
+import IconRenderer from '@/components/cover/IconRenderer';
+import TextRenderer from '@/components/cover/TextRenderer';
+import GuidesOverlay from '@/components/cover/GuidesOverlay';
 
 export default function Canvas() {
-	const { selectedRatios, showRuler, text, icon, background } = useCoverStore();
+	const selectedRatio = useCoverStore((s) => s.selectedRatio);
+	const background = useCoverStore((s) => s.background);
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [scale, setScale] = useState(1);
 
-	// Calculate the bounding box required for all selected ratios
 	const dimensions = useMemo(() => {
-		const activeRatios = RATIOS.filter((r) => selectedRatios.includes(r.label));
-		if (activeRatios.length === 0) return { width: 1000, height: 1000 };
+		const ratio = RATIOS.find((r) => r.label === selectedRatio);
+		if (!ratio) return { width: 1600, height: 900 };
+		return { width: ratio.width, height: ratio.height };
+	}, [selectedRatio]);
 
-		const maxWidth = Math.max(...activeRatios.map((r) => r.width));
-		const maxHeight = Math.max(...activeRatios.map((r) => r.height));
-
-		return { width: maxWidth, height: maxHeight };
-	}, [selectedRatios]);
-
-	// Auto-scale to fit container
 	useEffect(() => {
 		const handleResize = () => {
 			if (!containerRef.current) return;
@@ -43,109 +40,12 @@ export default function Canvas() {
 		return () => window.removeEventListener('resize', handleResize);
 	}, [dimensions]);
 
-	// Helper to convert hex to rgba
-	const hexToRgba = (hex: string, alpha: number) => {
-		let r = 0,
-			g = 0,
-			b = 0;
-		if (hex.length === 4) {
-			r = parseInt(hex[1] + hex[1], 16);
-			g = parseInt(hex[2] + hex[2], 16);
-			b = parseInt(hex[3] + hex[3], 16);
-		} else if (hex.length === 7) {
-			r = parseInt(hex.slice(1, 3), 16);
-			g = parseInt(hex.slice(3, 5), 16);
-			b = parseInt(hex.slice(5, 7), 16);
-		}
-		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-	};
-
-	// Helper to render the Icon with its container settings
-	const renderIcon = () => {
-		const bgColor =
-			icon.bgShape !== 'none'
-				? hexToRgba(icon.bgColor, icon.bgOpacity)
-				: 'transparent';
-
-		return (
-			<div
-				className="flex items-center justify-center"
-				style={{
-					transform: `rotate(${icon.rotation}deg)`,
-					filter: icon.shadow
-						? `drop-shadow(0 ${icon.shadowOffsetY}px ${icon.shadowBlur}px ${icon.shadowColor})`
-						: 'none',
-					backgroundColor: bgColor,
-					backdropFilter: icon.bgBlur > 0 ? `blur(${icon.bgBlur}px)` : 'none',
-					WebkitBackdropFilter:
-						icon.bgBlur > 0 ? `blur(${icon.bgBlur}px)` : 'none',
-					padding: icon.bgShape !== 'none' ? `${icon.padding}px` : 0,
-					borderRadius:
-						icon.bgShape === 'circle'
-							? '50%'
-							: icon.bgShape === 'rounded-square'
-								? `${icon.radius}px`
-								: icon.bgShape === 'square'
-									? '0'
-									: '0',
-				}}
-			>
-				{icon.customIconUrl ? (
-					<Image
-						src={icon.customIconUrl}
-						alt="Custom Icon"
-						width={icon.size}
-						height={icon.size}
-						className="w-full h-full object-contain"
-						style={{
-							borderRadius: `${icon.customIconRadius}px`,
-						}}
-					/>
-				) : (
-					<Icon
-						icon={icon.name}
-						width={icon.size}
-						height={icon.size}
-						color={icon.color}
-					/>
-				)}
-			</div>
-		);
-	};
-
-	// Helper to render Text
-	const renderText = (content: string) => (
-		<div
-			className="whitespace-pre text-center leading-tight"
-			style={{
-				transform: `rotate(${text.rotation}deg)`,
-				fontSize: `${text.fontSize}px`,
-				color: text.color,
-				fontWeight: text.fontWeight,
-				WebkitTextStroke:
-					text.strokeWidth > 0
-						? `${text.strokeWidth}px ${text.strokeColor}`
-						: undefined,
-			}}
-		>
-			{content}
-		</div>
-	);
-
-	// Determine Layout Content
-	const renderContent = () => {
-		// Default to Overlay Layout
-		return (
-			<div className="grid place-items-center relative">
-				<div className="z-10">{renderText(text.content)}</div>
-				<div className="z-20 absolute">{renderIcon()}</div>
-			</div>
-		);
-	};
-
 	return (
-		<div className="flex-1 bg-gray-100 dark:bg-gray-900 overflow-hidden relative w-full h-[40vh] md:h-full min-w-0 shrink-0 md:shrink">
-			{/* Container for scaling */}
+		<div
+			className="flex-1 bg-gray-100 dark:bg-gray-900 overflow-hidden relative w-full h-[55vh] md:h-full min-w-0 shrink-0 md:shrink"
+			role="region"
+			aria-label="封面预览"
+		>
 			<div
 				ref={containerRef}
 				style={{
@@ -168,7 +68,6 @@ export default function Canvas() {
 							: 'none',
 					}}
 				>
-					{/* Background Layer */}
 					<div
 						className="absolute inset-0"
 						style={{
@@ -193,48 +92,18 @@ export default function Canvas() {
 						)}
 					</div>
 
-					{/* Content Layer */}
-					<div className="z-10 pointer-events-none">{renderContent()}</div>
-
-					{/* Overlays / Guides Layer */}
-					{selectedRatios.map((ratioLabel) => {
-						const ratio = RATIOS.find((r) => r.label === ratioLabel);
-						if (!ratio) return null;
-
-						// Calculate position to center it
-						const left = (dimensions.width - ratio.width) / 2;
-						const top = (dimensions.height - ratio.height) / 2;
-
-						return (
-							<div
-								key={ratioLabel}
-								className="absolute border-2 border-dashed border-blue-500/50 pointer-events-none flex items-start justify-start export-exclude"
-								style={{
-									width: ratio.width,
-									height: ratio.height,
-									left: left,
-									top: top,
-									zIndex: 50,
-								}}
-							>
-								<span className="bg-blue-500 text-white text-xs px-1 opacity-70">
-									{ratioLabel}
-								</span>
+					<div className="z-10 pointer-events-none">
+						<div className="grid place-items-center relative">
+							<div className="z-10">
+								<TextRenderer />
 							</div>
-						);
-					})}
+							<div className="z-20 absolute">
+								<IconRenderer />
+							</div>
+						</div>
+					</div>
 
-					{/* Ruler Overlay */}
-					{showRuler && (
-						<div
-							className="absolute inset-0 pointer-events-none opacity-30 z-40 export-exclude"
-							style={{
-								backgroundImage:
-									'linear-gradient(90deg, #000 1px, transparent 1px), linear-gradient(0deg, #000 1px, transparent 1px)',
-								backgroundSize: '100px 100px',
-							}}
-						/>
-					)}
+					<GuidesOverlay dimensions={dimensions} />
 				</div>
 			</div>
 		</div>
