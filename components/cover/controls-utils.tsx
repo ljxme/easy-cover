@@ -4,6 +4,7 @@ import { RotateCcw } from 'lucide-react';
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 
 /**
  * Clamp a number between optional min and max bounds.
@@ -57,10 +58,83 @@ export function ResetButton({
 	);
 }
 
-/**
- * A number input that defers committing the value until blur or Enter,
- * to avoid overwriting user input from external store updates.
- */
+/* ------------------------------------------------------------------ */
+/*  SliderRow — compact Label + NumberInput + ResetButton + Slider   */
+/* ------------------------------------------------------------------ */
+
+interface SliderRowProps {
+	label: string;
+	value: number;
+	min: number;
+	max: number;
+	step?: number;
+	onValueChange: (value: number) => void;
+	resetValue: number;
+	formatValue?: (value: number) => string;
+	labelExtra?: React.ReactNode;
+}
+
+export function SliderRow({
+	label,
+	value,
+	min,
+	max,
+	step = 1,
+	onValueChange,
+	resetValue,
+	formatValue,
+	labelExtra,
+}: SliderRowProps) {
+	return (
+		<div className="flex flex-col gap-2">
+			<div className="flex justify-between items-center gap-2">
+				<div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+					<span>{label}</span>
+					{labelExtra}
+				</div>
+				<div className="flex items-center gap-1">
+					<NumberInput
+						value={value}
+						min={min}
+						max={max}
+						step={step}
+						onValueChange={onValueChange}
+					/>
+					<ResetButton onClick={() => onValueChange(resetValue)} />
+				</div>
+			</div>
+			<Slider
+				value={[value]}
+				min={min}
+				max={max}
+				step={step}
+				onValueChange={(v) => onValueChange(v[0])}
+			/>
+		</div>
+	);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Compact inline label row (Label + arbitrary control on the right) */
+/* ------------------------------------------------------------------ */
+
+interface InlineLabelRowProps {
+	label: string;
+	children: React.ReactNode;
+}
+
+export function InlineLabelRow({ label, children }: InlineLabelRowProps) {
+	return (
+		<div className="flex items-center justify-between">
+			<span className="text-xs text-muted-foreground font-medium">{label}</span>
+			{children}
+		</div>
+	);
+}
+
+/* ------------------------------------------------------------------ */
+/*  NumberInput (existing, unchanged below)                           */
+/* ------------------------------------------------------------------ */
 export function NumberInput({
 	value,
 	min,

@@ -13,14 +13,7 @@ export default function GuidesOverlay({
 		<>
 			{/* Ruler overlay */}
 			{showRuler && (
-				<div
-					className="absolute inset-0 pointer-events-none opacity-30 z-40 export-exclude"
-					style={{
-						backgroundImage:
-							'linear-gradient(90deg, #000 1px, transparent 1px), linear-gradient(0deg, #000 1px, transparent 1px)',
-						backgroundSize: '100px 100px',
-					}}
-				/>
+				<div className="absolute inset-0 pointer-events-none opacity-30 z-40 export-exclude ruler-grid" />
 			)}
 		</>
 	);

@@ -17,6 +17,7 @@ interface TextSettings {
 	strokeColor: string;
 	strokeWidth: number;
 	fontWeight: number;
+	fontFamily: string;
 	x: number;
 	y: number;
 	rotation: number;
@@ -105,6 +106,7 @@ const initialSnapshot: DesignSnapshot = {
 		strokeColor: '#ffffff',
 		strokeWidth: 0,
 		fontWeight: 700,
+		fontFamily: 'inherit',
 		x: 0,
 		y: 0,
 		rotation: 0,

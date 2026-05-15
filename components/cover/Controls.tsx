@@ -1,9 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { Undo2, Redo2, Save, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { SettingsCard } from '@/components/cover/SettingsCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
 	Select,
@@ -18,10 +18,11 @@ import TextSettings from '@/components/cover/TextSettings';
 import IconSettings from '@/components/cover/IconSettings';
 import BackgroundSettings from '@/components/cover/BackgroundSettings';
 import ExportPanel from '@/components/cover/ExportPanel';
+import TemplateDialog from '@/components/cover/TemplateDialog';
 
 const TEMPLATE_STORAGE_KEY = 'easy-cover-templates';
 
-interface SavedTemplate {
+export interface SavedTemplate {
 	name: string;
 	ratio: AspectRatio;
 	textContent: string;
@@ -30,6 +31,7 @@ interface SavedTemplate {
 	textStrokeColor: string;
 	textStrokeWidth: number;
 	textFontWeight: number;
+	textFontFamily: string;
 	iconName: string;
 	iconSize: number;
 	iconColor: string;
@@ -55,6 +57,7 @@ export default function Controls() {
 	const updateIcon = useCoverStore((s) => s.updateIcon);
 	const updateBackground = useCoverStore((s) => s.updateBackground);
 
+	const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
 	const canUndo = historyIndex > 0;
 	const canRedo = historyIndex < history.length - 1;
 
@@ -71,6 +74,7 @@ export default function Controls() {
 			textStrokeColor: text.strokeColor,
 			textStrokeWidth: text.strokeWidth,
 			textFontWeight: text.fontWeight,
+			textFontFamily: text.fontFamily,
 			iconName: icon.name,
 			iconSize: icon.size,
 			iconColor: icon.color,
@@ -100,40 +104,34 @@ export default function Controls() {
 				alert('没有已保存的模板');
 				return;
 			}
-
-			const names = templates.map((t, i) => `${i + 1}. ${t.name}`).join('\n');
-			const indexStr = prompt(
-				`选择一个模板（输入序号）：\n\n${names}`,
-			);
-			if (!indexStr) return;
-
-			const index = Number.parseInt(indexStr, 10) - 1;
-			if (index < 0 || index >= templates.length) return;
-
-			const t = templates[index];
-			setRatio(t.ratio);
-			updateText({
-				content: t.textContent,
-				fontSize: t.textFontSize,
-				color: t.textColor,
-				strokeColor: t.textStrokeColor,
-				strokeWidth: t.textStrokeWidth,
-				fontWeight: t.textFontWeight,
-			});
-			updateIcon({
-				name: t.iconName,
-				size: t.iconSize,
-				color: t.iconColor,
-				bgShape: t.iconBgShape as 'none' | 'circle' | 'square' | 'rounded-square',
-				bgColor: t.iconBgColor,
-			});
-			updateBackground({
-				type: t.bgType as 'solid' | 'image',
-				color: t.bgColor,
-			});
+			setTemplateDialogOpen(true);
 		} catch {
 			// localStorage unavailable
 		}
+	};
+
+	const handleApplyTemplate = (t: SavedTemplate) => {
+		setRatio(t.ratio);
+		updateText({
+			content: t.textContent,
+			fontSize: t.textFontSize,
+			color: t.textColor,
+			strokeColor: t.textStrokeColor,
+			strokeWidth: t.textStrokeWidth,
+			fontWeight: t.textFontWeight,
+			fontFamily: t.textFontFamily,
+		});
+		updateIcon({
+			name: t.iconName,
+			size: t.iconSize,
+			color: t.iconColor,
+			bgShape: t.iconBgShape as 'none' | 'circle' | 'square' | 'rounded-square',
+			bgColor: t.iconBgColor,
+		});
+		updateBackground({
+			type: t.bgType as 'solid' | 'image',
+			color: t.bgColor,
+		});
 	};
 
 	return (
@@ -177,17 +175,14 @@ export default function Controls() {
 
 			<div className="flex-1 min-h-0 w-full bg-muted/5">
 				<ScrollArea className="h-full">
-					<div className="p-4 space-y-4">
+					<div className="p-4 flex flex-col gap-3">
 						{/* Layout Section */}
-						<Card className="shadow-sm border-muted">
-							<CardHeader className="px-4 py-3 border-b bg-muted/20">
-								<CardTitle className="text-sm font-medium">布局设置</CardTitle>
-							</CardHeader>
-							<CardContent className="p-4 space-y-4">
-								<div className="space-y-2">
-									<Label className="text-xs text-muted-foreground">
+						<SettingsCard title="布局设置">
+							<div className="flex flex-col gap-3">
+								<div className="flex flex-col gap-1.5">
+									<span className="text-xs text-muted-foreground font-medium">
 										图片比例
-									</Label>
+									</span>
 									<Select
 										value={selectedRatio}
 										onValueChange={(v) => setRatio(v as AspectRatio)}
@@ -206,11 +201,10 @@ export default function Controls() {
 								</div>
 
 								<div className="flex items-center justify-between">
-									<Label htmlFor="show-ruler" className="text-sm">
+									<span className="text-xs text-muted-foreground font-medium">
 										显示标尺 / 网格
-									</Label>
+									</span>
 									<Switch
-										id="show-ruler"
 										checked={showRuler}
 										onCheckedChange={setShowRuler}
 									/>
@@ -236,43 +230,34 @@ export default function Controls() {
 										加载模板
 									</Button>
 								</div>
-							</CardContent>
-						</Card>
+							</div>
+						</SettingsCard>
 
 						{/* Text Section */}
-						<Card className="shadow-sm border-muted">
-							<CardHeader className="px-4 py-3 border-b bg-muted/20">
-								<CardTitle className="text-sm font-medium">文字设置</CardTitle>
-							</CardHeader>
-							<CardContent className="p-4">
-								<TextSettings />
-							</CardContent>
-						</Card>
+						<SettingsCard title="文字设置">
+							<TextSettings />
+						</SettingsCard>
 
 						{/* Icon Section */}
-						<Card className="shadow-sm border-muted">
-							<CardHeader className="px-4 py-3 border-b bg-muted/20">
-								<CardTitle className="text-sm font-medium">图标设置</CardTitle>
-							</CardHeader>
-							<CardContent className="p-4">
-								<IconSettings />
-							</CardContent>
-						</Card>
+						<SettingsCard title="图标设置">
+							<IconSettings />
+						</SettingsCard>
 
 						{/* Background Section */}
-						<Card className="shadow-sm border-muted">
-							<CardHeader className="px-4 py-3 border-b bg-muted/20">
-								<CardTitle className="text-sm font-medium">背景设置</CardTitle>
-							</CardHeader>
-							<CardContent className="p-4">
-								<BackgroundSettings />
-							</CardContent>
-						</Card>
+						<SettingsCard title="背景设置">
+							<BackgroundSettings />
+						</SettingsCard>
 					</div>
 				</ScrollArea>
 			</div>
 
 			<ExportPanel />
+
+			<TemplateDialog
+				open={templateDialogOpen}
+				onOpenChange={setTemplateDialogOpen}
+				onLoad={handleApplyTemplate}
+			/>
 		</div>
 	);
 }

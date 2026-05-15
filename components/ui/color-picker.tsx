@@ -22,8 +22,8 @@ export function ColorPicker({ color, onChange, label }: ColorPickerProps) {
 				<PopoverTrigger asChild>
 					<Button
 						variant="outline"
-						className="w-8 h-8 rounded-full p-0 border-2"
-						style={{ backgroundColor: color, borderColor: '#e5e7eb' }}
+						className="w-8 h-8 rounded-full p-0 border-2 !border-gray-200"
+						style={{ backgroundColor: color }}
 					/>
 				</PopoverTrigger>
 				<PopoverContent className="w-auto p-3">

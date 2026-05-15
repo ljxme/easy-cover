@@ -13,6 +13,10 @@ export default function TextRenderer() {
 				fontSize: `${text.fontSize}px`,
 				color: text.color,
 				fontWeight: text.fontWeight,
+				fontFamily:
+					text.fontFamily && text.fontFamily !== 'inherit'
+						? text.fontFamily
+						: undefined,
 				WebkitTextStroke:
 					text.strokeWidth > 0
 						? `${text.strokeWidth}px ${text.strokeColor}`

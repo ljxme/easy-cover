@@ -4,12 +4,10 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NumberInput, ResetButton } from '@/components/cover/controls-utils';
+import { SliderRow, InlineLabelRow } from '@/components/cover/controls-utils';
 import { RATIOS, useCoverStore } from '@/store/useCoverStore';
 
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
@@ -108,7 +106,7 @@ export default function BackgroundSettings() {
 	);
 
 	return (
-		<div className="space-y-4">
+		<div className="flex flex-col gap-3">
 			<Tabs
 				defaultValue={background.type}
 				onValueChange={(v) =>
@@ -120,19 +118,20 @@ export default function BackgroundSettings() {
 					<TabsTrigger value="image">图片背景</TabsTrigger>
 				</TabsList>
 
-				<TabsContent value="solid" className="space-y-3 mt-4">
-					<div className="flex items-center justify-between">
-						<Label className="text-sm">颜色</Label>
+				<TabsContent value="solid" className="mt-3">
+					<InlineLabelRow label="颜色">
 						<ColorPicker
 							color={background.color}
 							onChange={(c) => updateBackground({ color: c })}
 						/>
-					</div>
+					</InlineLabelRow>
 				</TabsContent>
 
-				<TabsContent value="image" className="space-y-3 mt-4">
-					<div className="space-y-2">
-						<Label className="text-xs text-muted-foreground">上传图片</Label>
+				<TabsContent value="image" className="flex flex-col gap-3 mt-3">
+					<div className="flex flex-col gap-1.5">
+						<span className="text-xs text-muted-foreground font-medium">
+							上传图片
+						</span>
 						<Input
 							type="file"
 							accept="image/png,image/jpeg,image/webp,image/svg+xml"
@@ -145,37 +144,22 @@ export default function BackgroundSettings() {
 						</p>
 					</div>
 
-					<div className="space-y-3">
-						<div className="flex justify-between items-center gap-2">
-							<Label className="text-sm">高斯模糊</Label>
-							<div className="flex items-center gap-2">
-								<NumberInput
-									value={background.blur}
-									min={0}
-									max={50}
-									step={1}
-									onValueChange={(v) => updateBackground({ blur: v })}
-								/>
-								<ResetButton
-									onClick={() => updateBackground({ blur: 0 })}
-								/>
-							</div>
-						</div>
-						<Slider
-							value={[background.blur]}
-							min={0}
-							max={50}
-							step={1}
-							onValueChange={(v) => updateBackground({ blur: v[0] })}
-							aria-label="高斯模糊"
-						/>
-					</div>
+					<SliderRow
+						label="高斯模糊"
+						value={background.blur}
+						min={0}
+						max={50}
+						step={1}
+						onValueChange={(v) => updateBackground({ blur: v })}
+						resetValue={0}
+					/>
 
-					<div className="space-y-3 pt-2 border-t">
-						<div className="flex items-center justify-between gap-1 flex-wrap">
-							<Label className="text-xs font-semibold text-muted-foreground w-full mb-1">
+					{/* Image transform section */}
+					<div className="flex flex-col gap-2 pt-2 border-t">
+						<div className="flex items-center gap-1">
+							<span className="text-xs text-muted-foreground font-medium w-full">
 								图片变换
-							</Label>
+							</span>
 							<Button
 								variant="outline"
 								size="sm"
@@ -196,195 +180,89 @@ export default function BackgroundSettings() {
 							</Button>
 						</div>
 
-						<div className="space-y-3">
-							<div className="flex justify-between items-center gap-2">
-								<Label className="text-xs">缩放</Label>
-								<div className="flex items-center gap-2">
-									<NumberInput
-										value={Number(background.scale.toFixed(2))}
-										min={0.1}
-										max={10}
-										step={0.1}
-										onValueChange={(v) => updateBackground({ scale: v })}
-									/>
-									<ResetButton
-										onClick={() => updateBackground({ scale: 1 })}
-									/>
-								</div>
-							</div>
-							<Slider
-								value={[background.scale]}
-								min={0.1}
-								max={10}
-								step={0.1}
-								onValueChange={(v) => updateBackground({ scale: v[0] })}
-								aria-label="缩放"
-							/>
-						</div>
+						<SliderRow
+							label="缩放"
+							value={Number(background.scale.toFixed(2))}
+							min={0.1}
+							max={10}
+							step={0.1}
+							onValueChange={(v) => updateBackground({ scale: v })}
+							resetValue={1}
+						/>
 
-						<div className="space-y-3">
-							<div className="flex justify-between items-center gap-2">
-								<Label className="text-xs">水平位置</Label>
-								<div className="flex items-center gap-2">
-									<NumberInput
-										value={background.positionX}
-										min={-500}
-										max={500}
-										step={1}
-										onValueChange={(v) => updateBackground({ positionX: v })}
-									/>
-									<ResetButton
-										onClick={() => updateBackground({ positionX: 50 })}
-									/>
-								</div>
-							</div>
-							<Slider
-								value={[background.positionX]}
-								min={-500}
-								max={500}
-								step={1}
-								onValueChange={(v) =>
-									updateBackground({ positionX: v[0] })
-								}
-								aria-label="水平位置"
-							/>
-						</div>
+						<SliderRow
+							label="水平位置"
+							value={background.positionX}
+							min={-500}
+							max={500}
+							step={1}
+							onValueChange={(v) => updateBackground({ positionX: v })}
+							resetValue={50}
+						/>
 
-						<div className="space-y-3">
-							<div className="flex justify-between items-center gap-2">
-								<Label className="text-xs">垂直位置</Label>
-								<div className="flex items-center gap-2">
-									<NumberInput
-										value={background.positionY}
-										min={-500}
-										max={500}
-										step={1}
-										onValueChange={(v) => updateBackground({ positionY: v })}
-									/>
-									<ResetButton
-										onClick={() => updateBackground({ positionY: 50 })}
-									/>
-								</div>
-							</div>
-							<Slider
-								value={[background.positionY]}
-								min={-500}
-								max={500}
-								step={1}
-								onValueChange={(v) =>
-									updateBackground({ positionY: v[0] })
-								}
-								aria-label="垂直位置"
-							/>
-						</div>
+						<SliderRow
+							label="垂直位置"
+							value={background.positionY}
+							min={-500}
+							max={500}
+							step={1}
+							onValueChange={(v) => updateBackground({ positionY: v })}
+							resetValue={50}
+						/>
 
-						<div className="space-y-3">
-							<div className="flex justify-between items-center gap-2">
-								<Label className="text-xs">旋转</Label>
-								<div className="flex items-center gap-2">
-									<NumberInput
-										value={background.rotation}
-										min={0}
-										max={360}
-										step={1}
-										onValueChange={(v) => updateBackground({ rotation: v })}
-									/>
-									<ResetButton
-										onClick={() => updateBackground({ rotation: 0 })}
-									/>
-								</div>
-							</div>
-							<Slider
-								value={[background.rotation]}
-								min={0}
-								max={360}
-								step={1}
-								onValueChange={(v) => updateBackground({ rotation: v[0] })}
-								aria-label="旋转"
-							/>
-						</div>
+						<SliderRow
+							label="旋转"
+							value={background.rotation}
+							min={0}
+							max={360}
+							step={1}
+							onValueChange={(v) => updateBackground({ rotation: v })}
+							resetValue={0}
+						/>
 					</div>
 				</TabsContent>
 			</Tabs>
 
-			<div className="flex items-center justify-between mt-2">
-				<Label htmlFor="bg-shadow" className="text-sm">
+			{/* Shadow toggle */}
+			<div className="flex items-center justify-between">
+				<span className="text-xs text-muted-foreground font-medium">
 					背景阴影
-				</Label>
+				</span>
 				<Switch
-					id="bg-shadow"
 					checked={background.shadow}
 					onCheckedChange={(c) => updateBackground({ shadow: c })}
 				/>
 			</div>
 
+			{/* Shadow settings panel */}
 			{background.shadow && (
-				<div className="space-y-3 p-3 bg-muted/50 rounded-lg border mt-2">
-					<div className="flex items-center justify-between">
-						<Label className="text-xs">阴影颜色</Label>
+				<div className="flex flex-col gap-3 p-3 rounded-lg border bg-muted/30">
+					<InlineLabelRow label="阴影颜色">
 						<ColorPicker
 							color={background.shadowColor}
 							onChange={(c) => updateBackground({ shadowColor: c })}
 						/>
-					</div>
+					</InlineLabelRow>
 
-					<div className="space-y-3">
-						<div className="flex justify-between items-center gap-2">
-							<Label className="text-xs">模糊</Label>
-							<div className="flex items-center gap-2">
-								<NumberInput
-									value={background.shadowBlur}
-									min={0}
-									max={200}
-									step={1}
-									onValueChange={(v) => updateBackground({ shadowBlur: v })}
-								/>
-								<ResetButton
-									onClick={() => updateBackground({ shadowBlur: 30 })}
-								/>
-							</div>
-						</div>
-						<Slider
-							value={[background.shadowBlur]}
-							min={0}
-							max={200}
-							step={1}
-							onValueChange={(v) =>
-								updateBackground({ shadowBlur: v[0] })
-							}
-							aria-label="阴影模糊"
-						/>
-					</div>
+					<SliderRow
+						label="模糊"
+						value={background.shadowBlur}
+						min={0}
+						max={200}
+						step={1}
+						onValueChange={(v) => updateBackground({ shadowBlur: v })}
+						resetValue={30}
+					/>
 
-					<div className="space-y-3">
-						<div className="flex justify-between items-center gap-2">
-							<Label className="text-xs">垂直偏移</Label>
-							<div className="flex items-center gap-2">
-								<NumberInput
-									value={background.shadowOffsetY}
-									min={-100}
-									max={100}
-									step={1}
-									onValueChange={(v) =>
-										updateBackground({ shadowOffsetY: v })
-									}
-								/>
-								<ResetButton
-									onClick={() => updateBackground({ shadowOffsetY: 10 })}
-								/>
-							</div>
-						</div>
-						<Slider
-							value={[background.shadowOffsetY]}
-							min={-100}
-							max={100}
-							step={1}
-							onValueChange={(v) =>
-								updateBackground({ shadowOffsetY: v[0] })
-							}
-							aria-label="阴影偏移"
-						/>
-					</div>
+					<SliderRow
+						label="垂直偏移"
+						value={background.shadowOffsetY}
+						min={-100}
+						max={100}
+						step={1}
+						onValueChange={(v) => updateBackground({ shadowOffsetY: v })}
+						resetValue={10}
+					/>
 				</div>
 			)}
 		</div>
